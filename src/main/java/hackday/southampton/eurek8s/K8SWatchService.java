@@ -1,56 +1,36 @@
 package hackday.southampton.eurek8s;
 
-import javax.annotation.PostConstruct;
-
-import io.fabric8.kubernetes.api.model.Endpoints;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClientException;
-import io.fabric8.kubernetes.client.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.stereotype.Service;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Ollie Hughes
  */
-@Service
+@Configuration
 public class K8SWatchService {
 
 	Logger log = LoggerFactory.getLogger(Eurek8sApplication.class);
-	KubernetesClient kubernetesClient;
+	private KubernetesClient kubernetesClient;
+	private DiscoveryClient discoveryClient;
+	private EurekaClient eurekaClient;
+	private EurekaInstanceConfigBean instanceConfig;
+	private PeerAwareInstanceRegistry instanceRegistry;
 
-	public K8SWatchService(KubernetesClient kubernetesClient) {
+
+	public K8SWatchService(KubernetesClient kubernetesClient, DiscoveryClient discoveryClient, EurekaClient eurekaClient, EurekaInstanceConfigBean instanceConfig, PeerAwareInstanceRegistry instanceRegistry) {
 		this.kubernetesClient = kubernetesClient;
+		this.discoveryClient = discoveryClient;
+		this.eurekaClient = eurekaClient;
+		this.instanceConfig = instanceConfig;
+		this.instanceRegistry = instanceRegistry;
 	}
 
-	@PostConstruct
-	public void setupWatch() {
-		kubernetesClient.services().watch(new Watcher<io.fabric8.kubernetes.api.model.Service>() {
-			@Override
-			public void eventReceived(Watcher.Action action, io.fabric8.kubernetes.api.model.Service resource) {
-				log.info("Received service event: {}", action.name());
-				log.info("Service details {}", resource.getStatus());
-			}
 
-			@Override
-			public void onClose(KubernetesClientException cause) {
-				throw new RuntimeException(cause);
-			}
-
-		});
-		kubernetesClient.endpoints().watch(new Watcher<Endpoints>() {
-			@Override
-			public void eventReceived(Action action, Endpoints resource) {
-				log.info("Received endpoint event: {}", action.name());
-				log.info("Endpoint details {}", resource.getSubsets());
-
-			}
-
-			@Override
-			public void onClose(KubernetesClientException cause) {
-				throw new RuntimeException(cause);
-			}
-		});
-	}
 }

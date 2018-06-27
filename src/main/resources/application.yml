@@ -1,0 +1,15 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: false
+    register-with-eureka: false
+  instance:
+    hostname: localhost
+    nonSecurePort: 8080
+    instance-id: ${spring.application.name}:0:${server.port}
+  server:
+    response-cache-update-interval-ms: 1
+spring:
+  application:
+    name: k8s-service-registry
