@@ -22,9 +22,10 @@ public class Eurek8sApplication {
 		Config base = Config.autoConfigure(null);
 		Config properties = new ConfigBuilder(base)
 				//Only set values that have been explicitly specified
-				.withMasterUrl("https://35.234.137.39")
+				.withMasterUrl("https://cluster1.pks.pcfvsphere.jagapps.co:8443")
 				.withNamespace("default")
 				.withApiVersion("v1")
+
 				.build();
 
 		return properties;

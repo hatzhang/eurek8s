@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import io.fabric8.kubernetes.api.model.LoadBalancerIngress;
 import io.fabric8.kubernetes.api.model.Service;
@@ -15,7 +14,6 @@ import io.fabric8.kubernetes.client.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
 import org.springframework.cloud.netflix.eureka.InstanceInfoFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,21 +26,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class Eurek8sController {
 
 	private KubernetesClient kubernetesClient;
-	private DiscoveryClient discoveryClient;
-	private EurekaClient eurekaClient;
 	private EurekaInstanceConfigBean instanceConfig;
 	private PeerAwareInstanceRegistry instanceRegistry;
-	private K8SWatchService k8SWatchService;
 	Logger log = LoggerFactory.getLogger(Eurek8sApplication.class);
 
 
-	public Eurek8sController(KubernetesClient kubernetesClient, DiscoveryClient discoveryClient, EurekaClient eurekaClient, EurekaInstanceConfigBean instanceConfig, PeerAwareInstanceRegistry instanceRegistry, K8SWatchService k8SWatchService) {
+	public Eurek8sController(KubernetesClient kubernetesClient, EurekaInstanceConfigBean instanceConfig, PeerAwareInstanceRegistry instanceRegistry) {
 		this.kubernetesClient = kubernetesClient;
-		this.discoveryClient = discoveryClient;
-		this.eurekaClient = eurekaClient;
 		this.instanceConfig = instanceConfig;
 		this.instanceRegistry = instanceRegistry;
-		this.k8SWatchService = k8SWatchService;
 	}
 
 	@GetMapping("/watch")
@@ -85,18 +77,4 @@ public class Eurek8sController {
 		return watch.toString();
 	}
 
-
-	@GetMapping("/register")
-	public String register() {
-		instanceConfig.setHostname("somehost");
-		instanceConfig.setNonSecurePort(7777);
-		instanceConfig.setSecurePortEnabled(false);
-		instanceConfig.setNonSecurePortEnabled(true);
-		final InstanceInfo instanceInfo = new InstanceInfoFactory().create(instanceConfig);
-
-		final ApplicationInfoManager newAppInfo = new ApplicationInfoManager(instanceConfig, instanceInfo);
-		newAppInfo.setInstanceStatus(InstanceInfo.InstanceStatus.UP);
-		instanceRegistry.register(instanceInfo, false);
-		return instanceRegistry.getApplications().toString();
-	}
 }
